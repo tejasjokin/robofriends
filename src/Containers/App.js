@@ -3,39 +3,37 @@ import Cardlist from '../Components/Cardlist.js';
 import Searchbox from '../Components/Searchbox.js';
 import Scroll from '../Components/Scroll.js'
 import ErrorBoundary from '../Components/ErrorBoundary.js';
-import { connect } from 'react-redux';
 import './App.css';
-import { setSearchField, requestRobots } from '../actions.js';
-
-const mapStateToProps = state => {
-	return {
-		searchField: state.searchRobots.searchField,
-		robots: state.requestRobots.robots,
-		isPending: state.requestRobots.isPending,
-		error: state.requestRobots.error
-	}
-}
-
-const mapDispatchToProps = dispatch => {
-	return{
-		onSearchchange: (event) => dispatch(setSearchField(event.target.value)),
-		onRequestRobots: () => dispatch(requestRobots()),
-	}
-}
 
 class App extends Component
 {
-	componentDidMount(){
-		this.props.onRequestRobots();
-	}	
+	constructor()
+	{
+		super()
+		this.state = 
+		{
+			robots : [],
+			searchfield : ''
+		}
+	}
 
+	componentDidMount(){
+		fetch('https://jsonplaceholder.typicode.com/users')
+		.then(response =>  response.json())
+		.then(users => {this.setState({ robots : users})})
+	}
+
+	onSearchchange = (event) =>
+	{
+		this.setState({ searchfield : event.target.value})
+	}
 	render()
 	{
-		const { searchField, onSearchchange, robots, isPending } = this.props
+		const { robots, searchfield } = this.state
 		const filterrobots = robots.filter(robots =>{
-			return robots.name.toLowerCase().includes(searchField.toLowerCase())
+			return robots.name.toLowerCase().includes(searchfield.toLowerCase())
 		})
-		if(isPending)
+		if(!robots.length)
 		{
 			return(
 				<h1>LOADING</h1>
@@ -46,7 +44,7 @@ class App extends Component
 			<div className="tc">
 				<nav className="tc">
 				<h1>ROBOFRIENDS</h1>
-				<Searchbox onSearchchange = {onSearchchange}/>
+				<Searchbox onSearchchange = {this.onSearchchange}/>
 				</nav>
 				<Scroll>
 					<ErrorBoundary>
@@ -59,4 +57,4 @@ class App extends Component
 	}
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(App);
+export default App;
